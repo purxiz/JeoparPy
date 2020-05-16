@@ -14,10 +14,10 @@ d_jeopardy_questions = {'$400': [], '$800': [], '$1200': [], '$1600': [], '$2000
 for entry in data:
 	value = entry["value"]
 	seen = 'seen' in entry.keys()
-	if not seen and value in jeopardy_questions.keys() and len(jeopardy_questions[value]) < 5 and value in jeopardy_values:
+	if not seen and value in jeopardy_questions.keys() and len(jeopardy_questions[value]) < 5 and not '<a' in entry['question']:
 		jeopardy_questions[value].append(entry)
 		entry['seen'] = True
-	if not seen and value in d_jeopardy_questions.keys() and len(d_jeopardy_questions[value]) < 5 and value in jeopardy_values:
+	elif not seen and value in d_jeopardy_questions.keys() and len(d_jeopardy_questions[value]) < 5 and not '<a' in entry['question']:
 		d_jeopardy_questions[value].append(entry)
 		entry['seen'] = True
 
@@ -25,6 +25,7 @@ with open('./JEOPARDY_QUESTIONS1.json', 'w') as f:
 	json.dump(data, f)
 
 print(jeopardy_questions)
+print(d_jeopardy_questions)
 
 window = pyglet.window.Window(fullscreen=True)
 
@@ -79,6 +80,7 @@ class Game:
 		self.index = 0
 		if self.value == '$1000':
 			gameState = GameStates.DOUBLE_JEOPARDY
+			self.value = '$400'
 			return
 		if self.value == '$2000':
 			gameState = GameStates.END
@@ -127,6 +129,7 @@ QUESTION_ANSWER_TIME = 5
 BUZZ_STRING = 'BUZZ BUZZ BUZZ'
 
 # question statuses
+# 0 -> new question starting
 # 1 -> category being displayed
 # 2 -> question being displayed for reading
 # 3 -> buzzer time
@@ -144,6 +147,8 @@ def update(dt):
 	global question_status, counter, buzz, timer1, timer2, timer
 	if gameState == GameStates.SPLASH:
 		label.text = 'Welcome to JeoparPY~ Press Any Key to Continue...'
+	elif gameState == GameStates.END:
+		label.text = 'Game Over'
 	else:
 		if(question_status == 0):
 			counter = 0
